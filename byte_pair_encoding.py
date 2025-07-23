@@ -78,7 +78,7 @@ def count_pairs(vocab, corpus):
         except:
             i += 1
             pass
-    print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
+    #print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
     return vocab, new_corpus
 
 def merge_corpus(vocab, corpus):
@@ -105,16 +105,40 @@ def byte_pair_encoding(text: str, merges: int):
     """ Executes byte pair encoding for a given text with a given number ob merges """
     corpus = create_corpus(text)
     vocab = get_vocab(corpus)
-
-    for _ in range(merges):
+    
+    import tqdm
+    for i in tqdm.tqdm(range(merges)):
         vocab, corpus = count_pairs(vocab,corpus)
 
     return vocab, corpus
         
+def load_vocab(file_path):
+    """ Loads a vocabulary from a pickle file """
+    with open(path_2_pickle, 'rb') as f:
+        return pickle.load(f)
 
 
-train = load('Shakespeare_clean_train.txt')
+path_2_full = "Shakespeare_clean_full.txt"
 
+full = load(path_2_full)
+
+#vocab, corpus = byte_pair_encoding(full, 800)
+
+import pickle
+#with open('vocab.pickle', 'wb') as f:
+#    pickle.dump(vocab, f)
+
+path_2_pickle = 'vocab.pickle'
+# load pickle vocab
+created_vocab = load_vocab(path_2_pickle)
+
+
+
+
+
+
+
+"""
 test = load('Shakespeare_clean_test.txt')
 
 vocab, corpus = byte_pair_encoding(train, 200)
@@ -126,4 +150,5 @@ corpus2 = create_corpus(test)
 corpus3 = merge_corpus(vocab,corpus2)
 
 print(corpus3[:1000])
+"""
 
