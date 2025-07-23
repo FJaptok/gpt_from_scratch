@@ -29,10 +29,10 @@ def create_corpus(text):
         corpus.append(char)
     return corpus
 
-def get_vocab(input):
+def get_vocab(corpus):
     """ Returns all unique characters inside a given input as a list """
     vocab = []
-    for character in input:
+    for character in corpus:
         vocab.append(character)
     return list(set(vocab))
 
@@ -81,8 +81,10 @@ def count_pairs(vocab, corpus):
     print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
     return vocab, new_corpus
 
-def merge_corpus(vocab, corpus):
+def merge_corpus(vocab, text):
     """ Merges tokens in a given corpus according to a given vocabulary """
+
+    corpus = create_corpus(text)
     for token in vocab:
         new_corpus = []
         i = 0
@@ -119,11 +121,5 @@ test = load('Shakespeare_clean_test.txt')
 
 vocab, corpus = byte_pair_encoding(train, 200)
 
-print(vocab)
-print(corpus[:1000])
-
-corpus2 = create_corpus(test)
-corpus3 = merge_corpus(vocab,corpus2)
-
-print(corpus3[:1000])
+corpus2 = merge_corpus(vocab,test)
 
