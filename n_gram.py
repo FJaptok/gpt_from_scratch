@@ -10,12 +10,37 @@ def load_pickle(file_path):
         return pickle.load(f)
 
 
-def uni_gram(corpus, vocab):
+def uni_gram(corpus, vocab, norm="laplace"):
     """ Merges unigrams in a given corpus according to a given vocabulary """
     counter = {}
+    if norm=="laplace":
+        increment = 1
+    else:
+        increment = 0
+    
     for token in corpus:
         if token in vocab:
-            counter[token] = counter.get(token, 0) + 1
+            counter[token] = counter.get(token, increment) + 1
+    return counter
+
+def bi_gram(corpus, vocab, norm="laplace"):
+    """ Merges bigrams in a given corpus according to a given vocabulary """
+    counter = {}
+    if norm == "laplace":
+        increment = 1
+    else:
+        increment = 0
+    
+    for token_1 in vocab:
+        for token_2 in vocab:
+            token = (token_1, token_2)
+            counter[token] = increment
+    
+    
+    for i in range(len(corpus) - 1):
+        token = (corpus[i] , corpus[i + 1])
+        if token in counter:
+            counter[token] += 1
     return counter
 
 path_2_pickle = 'vocab.pickle'
@@ -36,6 +61,28 @@ corpus3 = load_pickle('corpus3.pickle')
 
 #print(corpus3[:1000]) 
 
-counter = uni_gram(corpus3, created_vocab)
+counter_uni = uni_gram(corpus3, created_vocab)
+#print(counter_uni)
 
-print(counter)
+counter_bi = bi_gram(corpus3, created_vocab, "laplace")
+#print(counter_bi)
+
+joined_probability = []
+
+i = 0
+for pair in counter_bi:
+    
+    token_1, token_2 = pair
+    
+    uni_prob = counter_uni[token_1]
+    #print("uni prob :", uni_prob)
+    
+    bi_prob = counter_bi[pair]
+    #print("bi prob : ", bi_prob)
+
+    print(f"joined prob {pair} :", bi_prob / uni_prob)
+
+    if i == 100:
+        break
+    i += 1
+
