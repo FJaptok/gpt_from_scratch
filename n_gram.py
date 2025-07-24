@@ -3,20 +3,7 @@ import tqdm
 import time
 from itertools import product
 from collections import Counter
-from byte_pair_encoding import load,create_corpus,get_vocab,merge_corpus,byte_pair_encoding
-
-# def count_words(corpus):
-#     """ Counts the occurences of all tokens inside a given corpus as a dictionary """
-#     # get all tokens inside a corpus
-#     vocab = get_vocab(corpus)
-#     counts = {}
-#     for token in vocab:
-#         counts[token] = 0
-#     # count the occurences of each token
-#     for token in corpus:
-#         counts[token] += 1
-    
-#     return counts
+from byte_pair_encoding import load,create_corpus,get_vocab,segment,byte_pair_encoding
 
 def count_combinations(corpus, n):
     """ Counts the occurences of all tokens inside a given corpus as a dictionary """

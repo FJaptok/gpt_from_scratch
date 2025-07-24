@@ -81,7 +81,7 @@ def count_pairs(vocab, corpus):
     print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
     return vocab, new_corpus
 
-def merge_corpus(vocab, text):
+def segment(vocab, text):
     """ Merges tokens in a given corpus according to a given vocabulary """
 
     corpus = create_corpus(text)
@@ -89,17 +89,13 @@ def merge_corpus(vocab, text):
         new_corpus = []
         i = 0
         while i < len(corpus):
-            try:
-                if corpus[i]+corpus[i+1] == token:
-                    new_corpus.append(token)
-                    i += 2
-                else:
-                    new_corpus.append(corpus[i])
-                    i += 1
-            except:
+            if i+1 < len(corpus) and corpus[i]+corpus[i+1] == token:
+                new_corpus.append(token)
+                i += 2
+            else:
+                new_corpus.append(corpus[i])
                 i += 1
-                corpus = new_corpus
-                pass
+        corpus = new_corpus
     
     return corpus
 
@@ -119,7 +115,8 @@ if __name__ == '__main__':
     test = load('Shakespeare_clean_test.txt')
     val = load('Shakespeare_clean_valid.txt')
 
-    vocab, corpus = byte_pair_encoding(train, 200)
+    vocab, corpus = byte_pair_encoding(train, 10)
 
-    corpus2 = merge_corpus(vocab,test)
+    corpus2 = segment(vocab,"test test test test")
+    print(corpus2)
 
