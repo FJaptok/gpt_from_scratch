@@ -5,9 +5,30 @@ from byte_pair_encoding import load,create_corpus,get_vocab,merge_corpus,byte_pa
 import pickle
 import os 
 
+train = load('Shakespeare_clean_train.txt')
+test = load('Shakespeare_clean_test.txt')
+print(type(test))
+validation = load('Shakespeare_clean_valid.txt')
+
+vocab_file = 'vocab.pkl'
+if os.path.exists(vocab_file):
+    print(f"Loading vocabulary from {vocab_file}...")
+    with open(vocab_file, 'rb') as f:
+        vocab = pickle.load(f)
+    corpus = None 
+else:
+    print("Vocabulary file not found. Generating vocabulary...")
+    vocab, corpus = byte_pair_encoding(train, 50)
+    with open(vocab_file, 'wb') as f:
+        pickle.dump(vocab, f)
+    print(f"Vocabulary saved to {vocab_file}")
+
+corpus2 = merge_corpus(vocab,train)
+
+print(corpus2)
+
 
 def get_n_gram(corpus, n):
-    n_gram_counts = {}
     counts = {}
     for i in range(len(corpus)):
         current_token = corpus[i]
@@ -56,9 +77,6 @@ def get_n_gram(corpus, n):
             pass
     return cal_probs_from_counts(counts, bigram_counts, trigram_counts, fourgram_counts)
 
-            
-
-
 def cal_probs_from_counts(unigram_counts, bigram_counts=None, trigram_counts=None, fourgram_counts=None):
     uni_probs = {}
     total_unigram_count = sum(unigram_counts.values()) # Calculate total once
@@ -106,26 +124,66 @@ def cal_probs_from_counts(unigram_counts, bigram_counts=None, trigram_counts=Non
     
     return uni_probs, bi_probs, tri_probs, four_probs
 
+def calc_perplexity(sequence, models):
+    #sequence = create_corpus(sequence)
+    sequence = merge_corpus(vocab, sequence)
+    print(sequence)
+    prob = 1
+    if len(models) == 1:
+        for i in range(len(sequence)):
+            if sequence[i] in models[0]:
+                prob *= models[0][sequence[i]]
+            else: 
+                #Think of smart way to handle case of unknown probablilities
+                prob *= 1
+            
+    if len(models) == 2:
+        if sequence[0] in models [0]:
+            prob = models[0][sequence[0]]
+        else:
+            # To solve
+            prob = 1
+        for i in range(1, len(sequence)):
+            if (sequence[i-1], sequence[i]) in models[1]:
+                prob *= models[1][(sequence[i-1], sequence[i])]
+            else:
+                prob *= 1
+    
+    if len(models) == 3:
+        if sequence[0] in models[0] and (sequence[0], sequence[1]) in models[1]:
+            prob = models[0][sequence[0]] * models[1][(sequence[0], sequence[1])]
+        else:
+            # fix it 
+            prob = 1
+        for i in range(2, len(sequence)):
+            if (sequence[i-2], sequence[i-1], sequence[i]) in models[2]:
+                prob *= models[2][(sequence[i-2], sequence[i-1], sequence[i])]
+            else:
+                #fix
+                prob *= 1
+    
+    if len(models) == 4:
+        if sequence[0] in models[0] and (sequence[0], sequence[1]) in models[1] and (sequence[0], sequence[1], sequence[2]) in models[2]:
+            prob =  models[0][sequence[0]] * models[1][(sequence[0], sequence[1])] * models[2][(sequence[0], sequence[1], sequence[2])]
+        else:
+            prob = 1
+        for i in range(3, len(sequence)):
+            if (sequence[i-3], sequence[i-2], sequence[i-1], sequence[i]) in models[3]:
+                prob *= models[3][(sequence[i-3], sequence[i-2], sequence[i-1], sequence[i])]
+            else:
+                #fix 
+                prob *= 1
+    return prob**(-1/len(sequence))
 
 
-train = load('Shakespeare_clean_train.txt')
-test = load('Shakespeare_clean_test.txt')
-validation = load('Shakespeare_clean_valid.txt')
+uni_gram, bi_gram, tri_gram = get_n_gram(corpus2, 3)
 
-vocab_file = 'vocab.pkl'
-if os.path.exists(vocab_file):
-    print(f"Loading vocabulary from {vocab_file}...")
-    with open(vocab_file, 'rb') as f:
-        vocab = pickle.load(f)
-    corpus = None 
-else:
-    print("Vocabulary file not found. Generating vocabulary...")
-    vocab, corpus = byte_pair_encoding(train, 50)
-    with open(vocab_file, 'wb') as f:
-        pickle.dump(vocab, f)
-    print(f"Vocabulary saved to {vocab_file}")
+models = [uni_gram, bi_gram, tri_gram]
+#print(four_gram)
 
-corpus2 = merge_corpus(vocab,test)
 
-four_gram = get_n_gram(corpus2, 4)
-print(four_gram)
+
+perplexity = calc_perplexity("test sentence", models)
+
+print(perplexity)
+

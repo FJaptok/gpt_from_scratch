@@ -92,24 +92,31 @@ def count_pairs(vocab, corpus):
 def merge_corpus(vocab, text):
     """Merges tokens in a given corpus according to a given vocabulary"""
 
-    corpus = create_corpus(text)
+    corpus = create_corpus(text) # Initial corpus from the input text
+
     for token in vocab:
         new_corpus = []
         i = 0
         while i < len(corpus):
-            try:
-                if corpus[i] + corpus[i + 1] == token:
-                    new_corpus.append(token)
-                    i += 2
-                else:
-                    new_corpus.append(corpus[i])
-                    i += 1
-            except:
+            # Check if there are enough elements to form a pair
+            if i + 1 < len(corpus) and corpus[i] + corpus[i + 1] == token:
+                new_corpus.append(token)
+                i += 2
+            else:
+                new_corpus.append(corpus[i])
                 i += 1
-                corpus = new_corpus
-                pass
+        # IMPORTANT: Update corpus AFTER each token's merging pass
+        corpus = new_corpus
+        # If new_corpus is empty after a merge (unlikely but possible with very specific vocab/text)
+        # or if all elements were merged, ensure we don't proceed with an empty corpus
+        if not corpus and i < len(text.lower().replace(" ", "_")): # If original text still has unmerged chars
+            # This is a safeguard, you might need more sophisticated handling
+            # if the merging logic completely consumes the text in an unexpected way.
+            # For BPE, usually you'll have some tokens left.
+            pass
 
     return corpus
+
 
 
 def byte_pair_encoding(text: str, merges: int):
@@ -122,13 +129,6 @@ def byte_pair_encoding(text: str, merges: int):
 
     return vocab, corpus
 
-'''
-train = load("Shakespeare_clean_train.txt")
 
-test = load("Shakespeare_clean_test.txt")
 
-vocab, corpus = byte_pair_encoding(train, 200)
 
-corpus2 = merge_corpus(vocab, test)
-
-'''
