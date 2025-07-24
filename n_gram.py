@@ -107,12 +107,57 @@ def cal_probs_from_counts(unigram_counts, bigram_counts=None, trigram_counts=Non
     return uni_probs, bi_probs, tri_probs, four_probs
 
 
+def simple_interpolate(key, 
+                       lambdas,
+                       uni_probs, 
+                       bi_probs = None, 
+                       tri_probs = None, 
+                       four_probs = None):
+    
+    
+    if bi_probs == None:
+        print("interpolate needs at least two args")
+        return 0
+
+    if sum(lambdas) != 1.0:
+        print("lambdas need to sum to 1.0")
+        return 0
+    
+    value = 0
+
+    # uni gram
+    value += lambdas[0] * uni_probs[key[0]]
+    
+    # bi gram
+    value += lambdas[1] * bi_probs[(key[0], key[1])]
+
+    # tri gram
+    if tri_probs:
+        value += lambdas[2] * tri_probs[(key[0], key[1], key[2])]
+
+    # four gram
+    if four_probs:
+        value += lambdas[3] * four_probs[(key[0], key[1], key[2], key[3])]
+    
+
+    return value
+
+
+def split_corpus_into_n(text, n):
+
+    splits = []
+    for i in range(len(text) - (n-1)):
+        splits.append(text[i:i+n])
+    
+    return splits
+
+
 
 train = load('Shakespeare_clean_train.txt')
 test = load('Shakespeare_clean_test.txt')
 validation = load('Shakespeare_clean_valid.txt')
 
-vocab_file = 'vocab.pkl'
+vocab_file = 'vocab_k-800.pkl'
 if os.path.exists(vocab_file):
     print(f"Loading vocabulary from {vocab_file}...")
     with open(vocab_file, 'rb') as f:
@@ -120,7 +165,7 @@ if os.path.exists(vocab_file):
     corpus = None 
 else:
     print("Vocabulary file not found. Generating vocabulary...")
-    vocab, corpus = byte_pair_encoding(train, 50)
+    vocab, corpus = byte_pair_encoding(train, 800)
     with open(vocab_file, 'wb') as f:
         pickle.dump(vocab, f)
     print(f"Vocabulary saved to {vocab_file}")
@@ -128,4 +173,23 @@ else:
 corpus2 = merge_corpus(vocab,test)
 
 four_gram = get_n_gram(corpus2, 4)
-print(four_gram)
+#print(four_gram)
+
+snippet = corpus2[:10]
+print("test corpus : ", snippet, "\n")
+
+test_corpus = split_corpus_into_n(snippet, 2)
+
+val = 0
+for text in test_corpus:
+    tmp = simple_interpolate(key=snippet, 
+                   lambdas=[0.5, 0.5],
+                   uni_probs=four_gram[0],
+                   bi_probs=four_gram[1]
+                   )
+    
+    print(f"prob for : {text} : ", tmp)
+
+    val += tmp
+
+print("final probs : ", val)
