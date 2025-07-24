@@ -1,64 +1,83 @@
 import re
 import tqdm
+import time
+from itertools import product
 from collections import Counter
 from byte_pair_encoding import load,create_corpus,get_vocab,merge_corpus,byte_pair_encoding
 
-def count_occurences(corpus):
-    """ Counts the occurences of all tokens inside a given corpus as a dictionary """
-    # get all tokens inside a corpus
-    vocab = get_vocab(corpus)
-    counts = {}
-    for token in vocab:
-        counts[token] = 0
-    # count the occurences of each token
-    for token in corpus:
-        counts[token] += 1
+# def count_words(corpus):
+#     """ Counts the occurences of all tokens inside a given corpus as a dictionary """
+#     # get all tokens inside a corpus
+#     vocab = get_vocab(corpus)
+#     counts = {}
+#     for token in vocab:
+#         counts[token] = 0
+#     # count the occurences of each token
+#     for token in corpus:
+#         counts[token] += 1
     
+#     return counts
+
+def count_combinations(corpus, n):
+    """ Counts the occurences of all tokens inside a given corpus as a dictionary """
+    counts = {}
+    
+    for i in range(len(corpus)):
+        for j in range(1, n+1):
+            try:
+                if tuple(corpus[i-n+1:i+1]) in counts:
+                    counts[tuple(corpus[i-j+1:i+1])] += 1
+                else:
+                    counts[tuple(corpus[i-j+1:i+1])] = 1
+            except:
+                pass
     return counts
 
-def probability(corpus):
-    """ Returns a hashmap containing all possible token combinations 
-    with their probabilites according to their occurences in a given corpus """
-    hash_map = {}
-    vocab = get_vocab(corpus)
-    counts = count_occurences(corpus)
-
-    # create entries in the hash_map for all possible combinations
-    for a in vocab:
-        for b in vocab:
-            hash_map[(a,b)] = 0
-
-    # and count the occurences of each combination in the corpus
-    for i in range(len(corpus)):
-        try:
-            hash_map[(corpus[i-1],corpus[i])] += 1
-        except:
-            pass
+class n_gram:
+    """ A clss to create an N-gram for a given n """
+    def __init__(self, n):
+        self.n = n
     
-    # create entries for the probabilites for each combination
-    probabilties = {}
-    for a in vocab:
-        for b in vocab:
-            probabilties[(a,b)] = 0.0
+    def get_probabilities(self, corpus):
+        """ This function takes a corpus and returns sets the probabilities for all possible combinations accordingly """
+        # get the counts for all occuring combinations
+        counts = count_combinations(corpus, self.n)
+        probabilities = {}
 
-    # and compute the probability with the occurences of the combination and the first token itself
-    for pair in hash_map:
-        probabilties[pair] = hash_map[pair] / counts[pair[0]]
+        # we consider all occuring combinations given by "counts" 
+        for tokens in counts:
+            # add an exception for the uni-gram probabilities
+            if len(tokens) > 1:
+                if counts[tokens[:-1]] == 0:
+                    probabilities[tokens] = 0.0
+                else:
+                    # and calculate the probabilities accordingly with the full conditional probability and 
+                    # the conditional probability for the combined token - the last token
+                    probabilities[tokens] = counts[tokens] / counts[tokens[:-1]]
+            else:
+                # uni-gram probabilities are calculated with the number of occurences of the token over the whole corpus
+                probabilities[tokens] = counts[tokens] / len(corpus)
+        
+        self.probabilities = probabilities
 
-    return probabilties
+if __name__ == '__main__':
 
+    train = load('Shakespeare_clean_train.txt')
+    test = load('Shakespeare_clean_test.txt')
+    val = load('Shakespeare_clean_valid.txt')
 
-train = load('Shakespeare_clean_train.txt')
+    corpus = create_corpus(train)
 
-test = load('Shakespeare_clean_test.txt')
+    uni_gram = n_gram(1)
+    uni_gram.get_probabilities(corpus)
 
-validation = load('Shakespeare_clean_valid.txt')
+    bi_gram = n_gram(2)
+    bi_gram.get_probabilities(corpus)
 
-vocab, corpus = byte_pair_encoding(train, 50)
+    tri_gram = n_gram(3)
+    tri_gram.get_probabilities(corpus)
 
-corpus2 = merge_corpus(vocab,test)
-probs = probability(corpus2)
-
-print(probs)
+    four_gram = n_gram(4)
+    four_gram.get_probabilities(corpus)
 
 

@@ -113,13 +113,13 @@ def byte_pair_encoding(text: str, merges: int):
 
     return vocab, corpus
         
+if __name__ == '__main__':
 
+    train = load('Shakespeare_clean_train.txt')
+    test = load('Shakespeare_clean_test.txt')
+    val = load('Shakespeare_clean_valid.txt')
 
-train = load('Shakespeare_clean_train.txt')
+    vocab, corpus = byte_pair_encoding(train, 200)
 
-test = load('Shakespeare_clean_test.txt')
-
-vocab, corpus = byte_pair_encoding(train, 200)
-
-corpus2 = merge_corpus(vocab,test)
+    corpus2 = merge_corpus(vocab,test)
 
