@@ -5,24 +5,6 @@ from byte_pair_encoding import load,create_corpus,get_vocab,merge_corpus,byte_pa
 import pickle
 import os 
 
-train = load('Shakespeare_clean_train.txt')
-test = load('Shakespeare_clean_test.txt')
-validation = load('Shakespeare_clean_valid.txt')
-
-vocab_file = 'vocab.pkl'
-if os.path.exists(vocab_file):
-    print(f"Loading vocabulary from {vocab_file}...")
-    with open(vocab_file, 'rb') as f:
-        vocab = pickle.load(f)
-    corpus = None 
-else:
-    print("Vocabulary file not found. Generating vocabulary...")
-    vocab, corpus = byte_pair_encoding(train, 50)
-    with open(vocab_file, 'wb') as f:
-        pickle.dump(vocab, f)
-    print(f"Vocabulary saved to {vocab_file}")
-
-corpus2 = merge_corpus(vocab,test)
 
 def get_n_gram(corpus, n):
     n_gram_counts = {}
@@ -124,6 +106,26 @@ def cal_probs_from_counts(unigram_counts, bigram_counts=None, trigram_counts=Non
     
     return uni_probs, bi_probs, tri_probs, four_probs
 
+
+
+train = load('Shakespeare_clean_train.txt')
+test = load('Shakespeare_clean_test.txt')
+validation = load('Shakespeare_clean_valid.txt')
+
+vocab_file = 'vocab.pkl'
+if os.path.exists(vocab_file):
+    print(f"Loading vocabulary from {vocab_file}...")
+    with open(vocab_file, 'rb') as f:
+        vocab = pickle.load(f)
+    corpus = None 
+else:
+    print("Vocabulary file not found. Generating vocabulary...")
+    vocab, corpus = byte_pair_encoding(train, 50)
+    with open(vocab_file, 'wb') as f:
+        pickle.dump(vocab, f)
+    print(f"Vocabulary saved to {vocab_file}")
+
+corpus2 = merge_corpus(vocab,test)
 
 four_gram = get_n_gram(corpus2, 4)
 print(four_gram)
