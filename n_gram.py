@@ -178,14 +178,15 @@ four_gram = get_n_gram(corpus2, 4)
 snippet = corpus2[:10]
 print("test corpus : ", snippet, "\n")
 
-test_corpus = split_corpus_into_n(snippet, 2)
+test_corpus = split_corpus_into_n(snippet, 3)
 
 val = 0
 for text in test_corpus:
-    tmp = simple_interpolate(key=snippet, 
-                   lambdas=[0.5, 0.5],
+    tmp = simple_interpolate(key=text, 
+                   lambdas=[0.2, 0.2, 0.6],
                    uni_probs=four_gram[0],
-                   bi_probs=four_gram[1]
+                   bi_probs=four_gram[1],
+                   tri_probs=four_gram[2]
                    )
     
     print(f"prob for : {text} : ", tmp)
