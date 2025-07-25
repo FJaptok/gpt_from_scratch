@@ -7,9 +7,10 @@ import os
 
 train = load('Shakespeare_clean_train.txt')
 test = load('Shakespeare_clean_test.txt')
-print(type(test))
+#print(type(test))
 validation = load('Shakespeare_clean_valid.txt')
 
+#vocab_file = 'vocab_k-800.pkl'
 vocab_file = 'vocab.pkl'
 if os.path.exists(vocab_file):
     print(f"Loading vocabulary from {vocab_file}...")
@@ -24,8 +25,9 @@ else:
     print(f"Vocabulary saved to {vocab_file}")
 
 corpus2 = merge_corpus(vocab,train)
+#corpus_test = merge_corpus(vocab,test)
 
-print(corpus2)
+#print(corpus2)
 
 
 def get_n_gram(corpus, n):
@@ -176,14 +178,71 @@ def calc_perplexity(sequence, models):
     return prob**(-1/len(sequence))
 
 
+def simple_interpolate(key, 
+                       lambdas,
+                       n_grams):
+    
+    
+    if n_grams[1] == None:
+        print("interpolate needs at least two args")
+        return 0
+
+    if sum(lambdas) != 1.0:
+        print("lambdas need to sum to 1.0")
+        return 0
+    
+    value = 0
+
+    # uni gram
+    value += lambdas[0] * n_grams[0][key[0]]
+    
+    # bi gram
+    value += lambdas[1] * n_grams[1][(key[0], key[1])]
+
+    # tri gram
+    try:
+        value += lambdas[2] * n_grams[2][(key[0], key[1], key[2])]
+    except:
+        pass
+
+    # four gram
+    try:
+        value += lambdas[3] * n_grams[3][(key[0], key[1], key[2], key[3])]
+    except:
+        pass
+
+    return value
+
+
+def split_corpus_into_n(text, n):
+
+    splits = []
+    for i in range(len(text) - (n-1)):
+        splits.append(text[i:i+n])
+    
+    return splits
+
+
 uni_gram, bi_gram, tri_gram = get_n_gram(corpus2, 3)
 
 models = [uni_gram, bi_gram, tri_gram]
 #print(four_gram)
 
+snippet = corpus2[:10]
+print("test corpus : ", snippet, "\n")
+
+test_corpus = split_corpus_into_n(snippet, 3)
+
+for text in test_corpus:
+    tmp = simple_interpolate(key=text, 
+                   lambdas=[0.2, 0.2, 0.6],
+                   n_grams=models
+                   )
+    
+    print(f"prob for : {text} : ", tmp)
 
 
-perplexity = calc_perplexity("test sentence", models)
+perplexity = calc_perplexity("".join(snippet), models)
 
 print(perplexity)
 
