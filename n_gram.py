@@ -222,27 +222,31 @@ def split_corpus_into_n(text, n):
     
     return splits
 
+def call_interpolation_on_string(text, models, lambdas):
+    
+    value = 0
+    i = 0
+    while i < len(text):
+        split_text = text[i:i+len(models)]
+        value = simple_interpolate(split_text, lambdas=lambdas, n_grams=models)
+        print(f"probs for {split_text} : ", value)
+
+        if i == 10:
+            break
+
+        i += 1
+
 
 uni_gram, bi_gram, tri_gram = get_n_gram(corpus2, 3)
 
 models = [uni_gram, bi_gram, tri_gram]
-#print(four_gram)
-
-snippet = corpus2[:10]
-print("test corpus : ", snippet, "\n")
-
-test_corpus = split_corpus_into_n(snippet, 3)
-
-for text in test_corpus:
-    tmp = simple_interpolate(key=text, 
-                   lambdas=[0.2, 0.2, 0.6],
-                   n_grams=models
-                   )
-    
-    print(f"prob for : {text} : ", tmp)
 
 
-perplexity = calc_perplexity("".join(snippet), models)
+lambdas = [0.2, 0.2, 0.6]
+call_interpolation_on_string(corpus2, models, lambdas)
+
+
+perplexity = calc_perplexity("".join(corpus2[:10]), models)
 
 print(perplexity)
 
