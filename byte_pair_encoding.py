@@ -54,7 +54,6 @@ def count_pairs(vocab, corpus):
                 pairs[corpus[i]+corpus[i+1]] += 1
         except:
             pass
-
     
     # sort the counts for all pairs
     pairs = sorted(pairs.items(), key=lambda item: item[1], reverse=True)
@@ -76,6 +75,7 @@ def count_pairs(vocab, corpus):
                 new_corpus.append(corpus[i])
                 i += 1
         except:
+            new_corpus.append(corpus[i])
             i += 1
             pass
     print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
@@ -115,8 +115,11 @@ if __name__ == '__main__':
     test = load('Shakespeare_clean_test.txt')
     val = load('Shakespeare_clean_valid.txt')
 
-    vocab, corpus = byte_pair_encoding(train, 10)
+    vocab, corpus = byte_pair_encoding(train, 100)
 
-    corpus2 = segment(vocab,"test test test test")
-    print(corpus2)
+    print(vocab)
+    print(corpus)
+
+    # corpus2 = segment(vocab,"test test test test")
+    # print(corpus2)
 
