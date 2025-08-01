@@ -1,5 +1,4 @@
 import re
-import tqdm
 from collections import Counter
 
 def load(file_path):
@@ -7,7 +6,7 @@ def load(file_path):
     with open(file_path, 'r') as file:
         return file.read()
 
-def unix_copy(text):
+def unix_copy(text: str):
     """ The copy of the sorting unix console commands as python code """
     text = re.sub(r'[^a-zA-Z0-9]+', ' ', text)
     words = text.lower().split(' ')
@@ -16,7 +15,7 @@ def unix_copy(text):
     counts = counts.most_common()
     return counts
 
-def create_corpus(text):
+def create_corpus(text: str):
     """ Creates a corpus (list) from a given string """
     corpus = []
 
@@ -29,14 +28,14 @@ def create_corpus(text):
         corpus.append(char)
     return corpus
 
-def get_vocab(corpus):
+def get_vocab(corpus: list):
     """ Returns all unique characters inside a given input as a list """
     vocab = []
     for character in corpus:
         vocab.append(character)
     return list(set(vocab))
 
-def count_pairs(vocab, corpus):
+def count_pairs(vocab: list, corpus: list):
     """ Counts how often all possible combinations of tokens inside a given vocabulary occur inside a given corpus """
     pairs = {}
 
@@ -81,7 +80,7 @@ def count_pairs(vocab, corpus):
     print("new token: " + new_token + " was added to the vocabulary and merged in the corpus")
     return vocab, new_corpus
 
-def segment(vocab, text):
+def segment(vocab: list, text: str):
     """ Merges tokens in a given corpus according to a given vocabulary """
 
     corpus = create_corpus(text)
@@ -115,11 +114,8 @@ if __name__ == '__main__':
     test = load('Shakespeare_clean_test.txt')
     val = load('Shakespeare_clean_valid.txt')
 
-    vocab, corpus = byte_pair_encoding(train, 100)
+    vocab, segmented_train = byte_pair_encoding(train, 100)
+    segmented_test = segment(vocab,test)
 
-    print(vocab)
-    print(corpus)
-
-    # corpus2 = segment(vocab,"test test test test")
-    # print(corpus2)
+    print("segmented test first 100: " , segmented_test[:100])
 

@@ -4,13 +4,13 @@ import time
 
 class n_gram:
     """ A clss to create an N-gram for a given n """
-    def __init__(self, n):
+    def __init__(self, n: int):
         self.n                      = n
         self.probabilities          = {}
         self.inter_probabilities    = {}
         self.vocab                  = []
     
-    def get_probabilities(self, corpus):
+    def get_probabilities(self, corpus: list):
         """ This function takes a corpus and sets the probabilities for all possible combinations accordingly """
         # get the counts for all occuring combinations
         counts = self.count_combinations(corpus)
@@ -33,7 +33,7 @@ class n_gram:
                 self.probabilities[tokens] = (counts[tokens] + 1) / (len(corpus) + len(self.vocab))
 
     
-    def interpolate(self, corpus, parameters):
+    def interpolate(self, corpus: list, parameters: list):
         """ This function computes the interpolated probabilities. 
         parameters[0] gives the lambda value for the uni-gram probabilities, parameters[1] for the bi-gram probabilities etc """
 
@@ -58,7 +58,7 @@ class n_gram:
             else:
                 pass
     
-    def count_combinations(self, corpus):
+    def count_combinations(self, corpus: list):
         """ Counts the occurences of all tokens inside a given corpus as a dictionary """
         counts = {}
         
@@ -74,7 +74,7 @@ class n_gram:
                     pass
         return counts
     
-    def generate(self, start_token, max_iter, use_inter = False):
+    def generate(self, start_token: str, max_iter: int, use_inter = False):
         """ Generates and returns a string with the interpolated or normal probabilities starting with a single given token and for a given token length. """
         
         generation = [start_token]
@@ -123,7 +123,7 @@ class n_gram:
         return ''.join(generation)
 
 
-def perplexity(corpus, n_gram, use_inter = False):
+def perplexity(corpus: list, n_gram, use_inter = False):
     """ This function computes the perplexity for a given n_gram and corpus and can use the standard probabilities or the interpolated ones """
     if use_inter:
         for i in range(len(corpus)):
