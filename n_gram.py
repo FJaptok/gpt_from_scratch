@@ -75,39 +75,49 @@ class n_gram:
         return counts
     
     def generate(self, start_token, max_iter, use_inter = False):
+        """ Generates and returns a string with the interpolated or normal probabilities starting with a single given token and for a given token length. """
         
         generation = [start_token]
 
+        # use interpolated probabilities for generation if the flag is True
         if use_inter:
             for _ in range(max_iter):
                 possible = {}
-                current_token = tuple(generation[-self.n+1:])
+                # gather the context for the model's N
+                context = tuple(generation[-self.n+1:])
 
                 for token in self.inter_probabilities:
-
-                    if token[:len(current_token)] == current_token and len(token) > len(current_token):
+                    # check all probabilities and collect the ones starting with the tokens inside the context window
+                    # the second condition exists because we only consider probabilities where something follows the given context
+                    if token[:len(context)] == context and len(token) > len(context):
                         possible[token] = self.inter_probabilities[token]
-            
+
+                # get the most probable following token/s
                 sorted_dict = dict(sorted(possible.items(), key=lambda item: item[1]))
                 most_common = next(iter(sorted_dict))
 
-                for subword in most_common[len(current_token):]:
+                # small for loop if we want to append multiple new tokens at once
+                for subword in most_common[len(context):]:
                     generation.append(subword)
         
         else:
             for _ in range(max_iter):
                 possible = {}
-                current_token = tuple(generation[-self.n+1:])
+                # gather the context for the model's N
+                context = tuple(generation[-self.n+1:])
 
                 for token in self.probabilities:
-
-                    if token[:len(current_token)] == current_token and len(token) > len(current_token):
+                    # check all probabilities and collect the ones starting with the tokens inside the context window
+                    # the second condition exists because we only consider probabilities where something follows the given context
+                    if token[:len(context)] == context and len(token) > len(context):
                         possible[token] = self.probabilities[token]
-            
+
+                # get the most probable following token/s
                 sorted_dict = dict(sorted(possible.items(), key=lambda item: item[1]))
                 most_common = next(iter(sorted_dict))
 
-                for subword in most_common[len(current_token):]:
+                # small for loop if we want to append multiple new tokens at once
+                for subword in most_common[len(context):]:
                     generation.append(subword)
 
         return ''.join(generation)
